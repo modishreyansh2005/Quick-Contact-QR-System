@@ -394,26 +394,26 @@ def download_card(code):
 
 
 # Export CSV functionality (Optional, can be enabled if needed)
-import sqlite3
+# import sqlite3
 
-@app.route("/admin/export")
-def export_csv():
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, vehicle_number, owner_name, phone, qr_code FROM vehicles")
-    rows = cursor.fetchall()
-    conn.close()
+# @app.route("/admin/export")
+# def export_csv():
+#     conn = sqlite3.connect("database.db")
+#     cursor = conn.cursor()
+#     cursor.execute("SELECT id, vehicle_number, owner_name, phone, qr_code FROM vehicles")
+#     rows = cursor.fetchall()
+#     conn.close()
 
-    si = StringIO()
-    writer = csv.writer(si)
-    writer.writerow(["ID", "Vehicle Number", "Owner Name", "Phone", "QR Code"])
-    writer.writerows(rows)
+#     si = StringIO()
+#     writer = csv.writer(si)
+#     writer.writerow(["ID", "Vehicle Number", "Owner Name", "Phone", "QR Code"])
+#     writer.writerows(rows)
 
-    return Response(
-        si.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-Disposition": "attachment;filename=vehicles.csv"}
-    )
+#     return Response(
+#         si.getvalue(),
+#         mimetype="text/csv",
+#         headers={"Content-Disposition": "attachment;filename=vehicles.csv"}
+#     )
 
 
 # ------------------------
