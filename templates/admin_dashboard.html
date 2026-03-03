@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — QRVault</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0eb;
+    --surface: #ffffff;
+    --surface2: #faf8f5;
+    --surface3: #f0ece6;
+    --border: #e8e0d8;
+    --border-strong: #d5cdc5;
+    --text: #1a1714;
+    --text-secondary: #6b6460;
+    --text-muted: #a89f9a;
+    --blue: #4f7cff;
+    --blue-soft: rgba(79,124,255,0.1);
+    --green: #00c48c;
+    --green-soft: rgba(0,196,140,0.1);
+    --amber: #f5a623;
+    --amber-soft: rgba(245,166,35,0.1);
+    --red: #ff4d6a;
+    --red-soft: rgba(255,77,106,0.1);
+    --purple: #8b5cf6;
+    --purple-soft: rgba(139,92,246,0.1);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+    --shadow-lg: 0 16px 48px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.05);
+    --shadow-xl: 0 24px 64px rgba(0,0,0,0.14), 0 8px 20px rgba(0,0,0,0.07);
+  }
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);min-height:100vh;position:relative;color:var(--text);}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 900px 700px at 5% 5%,rgba(79,124,255,0.07) 0%,transparent 65%),radial-gradient(ellipse 700px 600px at 95% 90%,rgba(0,196,140,0.07) 0%,transparent 65%),radial-gradient(ellipse 500px 400px at 55% 40%,rgba(245,166,35,0.04) 0%,transparent 65%);pointer-events:none;z-index:0;}
+  body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(0,0,0,0.042) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:0;animation:gridDrift 24s ease-in-out infinite;}
+  @keyframes gridDrift{0%,100%{background-position:0 0;}50%{background-position:14px 14px;}}
+
+  .orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;animation:orbFloat ease-in-out infinite;}
+  .orb-1{width:600px;height:600px;background:radial-gradient(circle,rgba(79,124,255,0.11),transparent 70%);top:-200px;left:-160px;animation-duration:16s;}
+  .orb-2{width:500px;height:500px;background:radial-gradient(circle,rgba(0,196,140,0.09),transparent 70%);bottom:-140px;right:-130px;animation-duration:13s;animation-delay:-5s;}
+  .orb-3{width:320px;height:320px;background:radial-gradient(circle,rgba(245,166,35,0.08),transparent 70%);top:38%;left:62%;animation-duration:11s;animation-delay:-8s;}
+  @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(28px,-28px) scale(1.05);}66%{transform:translate(-20px,20px) scale(0.96);}}
+
+  .particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .particle{position:absolute;border-radius:50%;opacity:0;animation:particleRise linear infinite;}
+  @keyframes particleRise{0%{transform:translateY(100vh) scale(0);opacity:0;}5%{opacity:.45;transform:translateY(95vh) scale(1);}90%{opacity:.2;}100%{transform:translateY(-120px) scale(.5);opacity:0;}}
+
+  /* TOAST */
+  .toast-stack{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:.6rem;pointer-events:none;}
+  .toast{display:flex;align-items:center;gap:.75rem;padding:.8rem 1.1rem;background:white;border-radius:12px;border:1px solid var(--border);box-shadow:var(--shadow-lg);font-size:.85rem;font-weight:500;color:var(--text);max-width:320px;pointer-events:all;animation:toastIn .4s cubic-bezier(.34,1.56,.64,1) forwards;}
+  .toast.out{animation:toastOut .35s ease forwards;}
+  @keyframes toastIn{from{opacity:0;transform:translateX(24px) scale(.95);}to{opacity:1;transform:translateX(0) scale(1);}}
+  @keyframes toastOut{to{opacity:0;transform:translateX(24px) scale(.95);}}
+  .toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .toast-dot.green{background:var(--green);}.toast-dot.blue{background:var(--blue);}.toast-dot.amber{background:var(--amber);}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(26,23,20,.4);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);display:none;align-items:center;justify-content:center;padding:1rem;}
+  .modal-overlay.show{display:flex;animation:overlayIn .25s ease;}
+  @keyframes overlayIn{from{opacity:0;}to{opacity:1;}}
+  .modal{background:white;border-radius:22px;border:1px solid var(--border);box-shadow:var(--shadow-xl);padding:2rem;max-width:360px;width:100%;animation:modalPop .38s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes modalPop{from{opacity:0;transform:scale(.88) translateY(20px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  .modal-icon{width:54px;height:54px;border-radius:15px;background:var(--red-soft);border:1.5px solid rgba(255,77,106,.22);display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem;animation:iconWiggle .5s ease .3s;}
+  @keyframes iconWiggle{0%,100%{transform:rotate(0);}25%{transform:rotate(-8deg);}75%{transform:rotate(8deg);}}
+  .modal-icon svg{width:24px;height:24px;color:var(--red);}
+  .modal-title{font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:.35rem;}
+  .modal-sub{font-size:.83rem;color:var(--text-muted);line-height:1.55;margin-bottom:1.4rem;}
+  .modal-actions{display:flex;gap:.7rem;}
+  .modal-cancel{flex:1;padding:.72rem;font-family:inherit;font-size:.88rem;font-weight:600;background:var(--surface2);color:var(--text);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s ease;}
+  .modal-cancel:hover{background:white;border-color:var(--border-strong);transform:translateY(-1px);}
+  .modal-confirm{flex:1;padding:.72rem;font-family:inherit;font-size:.88rem;font-weight:700;background:var(--red);color:white;border:none;border-radius:10px;cursor:pointer;box-shadow:0 4px 14px rgba(255,77,106,.3);transition:all .2s ease;text-decoration:none;display:flex;align-items:center;justify-content:center;}
+  .modal-confirm:hover{background:#e0003a;transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,77,106,.42);}
+
+  /* NAVBAR */
+  .navbar{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.9);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 14px rgba(0,0,0,.05);opacity:0;animation:navReveal .55s ease .1s forwards;}
+  @keyframes navReveal{from{opacity:0;transform:translateY(-100%);}to{opacity:1;transform:translateY(0);}}
+  .navbar::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:linear-gradient(90deg,#4f7cff 0%,#00c48c 33%,#f5a623 66%,#ff4d6a 100%);background-size:300% 100%;animation:stripeMove 5s ease infinite;}
+  @keyframes stripeMove{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+  .nav-left{display:flex;align-items:center;gap:.8rem;}
+  .nav-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;}
+  .nav-brand-icon{width:34px;height:34px;background:linear-gradient(135deg,#4f7cff,#00c48c);border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(79,124,255,.3);position:relative;overflow:hidden;animation:iconPulse 3s ease-in-out infinite;}
+  @keyframes iconPulse{0%,100%{box-shadow:0 4px 12px rgba(79,124,255,.28);}50%{box-shadow:0 6px 20px rgba(79,124,255,.48),0 0 0 4px rgba(79,124,255,.08);}}
+  .nav-brand-icon::before{content:'';position:absolute;inset:0;background:conic-gradient(from 0deg,transparent 55%,rgba(255,255,255,.25) 65%,transparent 75%);animation:sweepRotate 3s linear infinite;}
+  @keyframes sweepRotate{to{transform:rotate(360deg);}}
+  .nav-brand-icon svg{width:16px;height:16px;color:white;position:relative;z-index:1;}
+  .nav-brand-name{font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:var(--text);letter-spacing:.04em;}
+  .nav-brand-name span{background:linear-gradient(135deg,#4f7cff,#00c48c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .nav-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .6rem;background:var(--blue-soft);border:1px solid rgba(79,124,255,.2);border-radius:99px;font-size:.65rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;}
+  .nav-badge-dot{width:4px;height:4px;border-radius:50%;background:var(--blue);animation:blink 1.8s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+  .nav-right{display:flex;align-items:center;gap:.75rem;}
+  .nav-time{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text-muted);padding:.3rem .7rem;background:var(--surface2);border:1px solid var(--border);border-radius:7px;}
+  .logout-btn{display:flex;align-items:center;gap:.45rem;padding:.48rem 1rem;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:.83rem;font-weight:600;color:var(--text-secondary);text-decoration:none;cursor:pointer;transition:all .25s ease;box-shadow:var(--shadow-sm);}
+  .logout-btn svg{width:14px;height:14px;}
+  .logout-btn:hover{background:white;border-color:var(--red);color:var(--red);transform:translateY(-1px);box-shadow:0 4px 14px rgba(255,77,106,.15);}
+
+  /* PAGE */
+  .page{position:relative;z-index:10;padding:2rem;max-width:1280px;margin:0 auto;}
+  .page-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.8rem;flex-wrap:wrap;gap:1rem;opacity:0;animation:fadeSlideUp .55s ease .35s forwards;}
+  @keyframes fadeSlideUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+  .page-eyebrow{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.25rem;display:flex;align-items:center;gap:.4rem;}
+  .page-eyebrow svg{width:10px;height:10px;}
+  .page-title-h{font-size:1.85rem;font-weight:700;color:var(--text);letter-spacing:-.04em;line-height:1.1;}
+  .page-title-h .accent{background:linear-gradient(135deg,#4f7cff,#00c48c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+  /* QUICK ACTIONS */
+  .quick-actions{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;opacity:0;animation:fadeSlideUp .55s ease .42s forwards;margin-bottom:1.8rem;padding:1.1rem 1.3rem;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-sm);}
+  .qa-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text-muted);margin-right:.3rem;white-space:nowrap;}
+  .qa-sep{width:1px;height:24px;background:var(--border);margin:0 .2rem;flex-shrink:0;}
+  .qa-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.52rem 1rem;font-family:inherit;font-size:.82rem;font-weight:600;border-radius:10px;border:1.5px solid var(--border);cursor:pointer;text-decoration:none;transition:all .22s ease;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);white-space:nowrap;}
+  .qa-btn::after{content:'';position:absolute;top:-50%;left:-70%;width:45%;height:200%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.32),transparent);transform:skewX(-18deg);transition:left .5s ease;}
+  .qa-btn:hover::after{left:130%;}
+  .qa-btn svg{width:14px;height:14px;flex-shrink:0;}
+  .qa-btn.primary{background:linear-gradient(135deg,#4f7cff,#00c48c);background-size:200% 200%;color:white;border-color:transparent;box-shadow:0 4px 14px rgba(79,124,255,.28);animation:btnGrad 6s ease infinite;}
+  @keyframes btnGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+  .qa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(79,124,255,.38);}
+  .qa-btn.ghost{background:var(--surface2);color:var(--text-secondary);}
+  .qa-btn.ghost:hover{background:white;color:var(--text);transform:translateY(-1px);border-color:var(--border-strong);box-shadow:var(--shadow-md);}
+  .qa-btn.amber-btn{background:var(--amber-soft);color:var(--amber);border-color:rgba(245,166,35,.25);}
+  .qa-btn.amber-btn:hover{background:rgba(245,166,35,.18);transform:translateY(-1px);box-shadow:0 4px 14px rgba(245,166,35,.22);}
+  .qa-btn.purple-btn{background:var(--purple-soft);color:var(--purple);border-color:rgba(139,92,246,.25);}
+  .qa-btn.purple-btn:hover{background:rgba(139,92,246,.16);transform:translateY(-1px);box-shadow:0 4px 14px rgba(139,92,246,.22);}
+  .qa-btn.danger-btn{background:var(--red-soft);color:var(--red);border-color:rgba(255,77,106,.2);}
+  .qa-btn.danger-btn:hover{background:rgba(255,77,106,.16);transform:translateY(-1px);box-shadow:0 4px 14px rgba(255,77,106,.22);}
+
+  /* STATS */
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.8rem;}
+  @media(max-width:720px){.stats-grid{grid-template-columns:1fr;}}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:1.4rem 1.5rem;box-shadow:var(--shadow-md);position:relative;overflow:hidden;opacity:0;animation:cardReveal .6s cubic-bezier(.34,1.3,.64,1) forwards;transition:transform .25s ease,box-shadow .25s ease;cursor:default;}
+  .stat-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+  .stat-card:nth-child(1){animation-delay:.48s;}.stat-card:nth-child(2){animation-delay:.6s;}.stat-card:nth-child(3){animation-delay:.72s;}
+  @keyframes cardReveal{from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+  .stat-card::before{content:'';position:absolute;top:-40px;right:-40px;width:130px;height:130px;border-radius:50%;filter:blur(30px);}
+  .stat-card.blue::before{background:rgba(79,124,255,.2);}.stat-card.green::before{background:rgba(0,196,140,.2);}.stat-card.amber::before{background:rgba(245,166,35,.2);}
+  .stat-card::after{content:'';position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:0 3px 3px 0;}
+  .stat-card.blue::after{background:var(--blue);}.stat-card.green::after{background:var(--green);}.stat-card.amber::after{background:var(--amber);}
+  .stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+  .stat-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+  .stat-icon.blue{background:var(--blue-soft);color:var(--blue);}.stat-icon.green{background:var(--green-soft);color:var(--green);}.stat-icon.amber{background:var(--amber-soft);color:var(--amber);}
+  .stat-icon svg{width:20px;height:20px;position:relative;z-index:1;}
+  .stat-trend{display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .5rem;border-radius:99px;font-size:.68rem;font-weight:700;}
+  .stat-trend.up{background:var(--green-soft);color:var(--green);}.stat-trend.neutral{background:var(--amber-soft);color:var(--amber);}
+  .stat-trend svg{width:9px;height:9px;}
+  .stat-value{font-family:'DM Mono',monospace;font-size:2.2rem;font-weight:500;color:var(--text);letter-spacing:-.02em;line-height:1;margin-bottom:.3rem;}
+  .stat-label{font-size:.8rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;}
+  .stat-bar{margin-top:1rem;height:3px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .stat-bar-fill{height:100%;border-radius:99px;width:0%;animation:barFill 1.2s cubic-bezier(.4,0,.2,1) forwards;}
+  .stat-card:nth-child(1) .stat-bar-fill{animation-delay:.85s;background:var(--blue);}
+  .stat-card:nth-child(2) .stat-bar-fill{animation-delay:1s;background:var(--green);}
+  .stat-card:nth-child(3) .stat-bar-fill{animation-delay:1.15s;background:var(--amber);}
+  @keyframes barFill{from{width:0%;}}
+
+  /* SECTION */
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-md);overflow:hidden;opacity:0;animation:fadeSlideUp .6s ease .88s forwards;}
+  .section-header{padding:1.4rem 1.6rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;background:linear-gradient(160deg,#f8f6ff 0%,#f0fdf8 100%);position:relative;overflow:hidden;}
+  .section-header::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(79,124,255,.05) 1px,transparent 1px);background-size:18px 18px;pointer-events:none;}
+  .section-title-wrap{position:relative;z-index:1;}
+  .section-title{font-size:1rem;font-weight:700;color:var(--text);letter-spacing:-.02em;display:flex;align-items:center;gap:.5rem;}
+  .section-title svg{width:16px;height:16px;color:var(--blue);}
+  .section-sub{font-size:.78rem;color:var(--text-muted);margin-top:.15rem;}
+  .row-count{display:inline-flex;align-items:center;padding:.18rem .6rem;background:var(--surface2);border:1px solid var(--border);border-radius:99px;font-size:.72rem;font-weight:600;color:var(--text-muted);font-family:'DM Mono',monospace;margin-left:.5rem;}
+
+  /* SEARCH */
+  .search-form{display:flex;gap:.6rem;position:relative;z-index:1;}
+  .search-wrap{position:relative;}
+  .search-icon{position:absolute;left:.85rem;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;transition:color .25s ease,transform .3s cubic-bezier(.34,1.56,.64,1);}
+  .search-icon svg{width:15px;height:15px;}
+  .search-wrap:focus-within .search-icon{color:var(--blue);transform:translateY(-50%) scale(1.15);}
+  .search-input{padding:.65rem 1rem .65rem 2.4rem;font-family:inherit;font-size:.88rem;font-weight:500;color:var(--text);background:white;border:1.5px solid var(--border);border-radius:10px;outline:none;width:240px;transition:all .25s ease;box-shadow:var(--shadow-sm);caret-color:var(--blue);}
+  .search-input::placeholder{color:var(--text-muted);font-weight:400;}
+  .search-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,124,255,.12),var(--shadow-sm);}
+  .search-btn{padding:.65rem 1.1rem;font-family:inherit;font-size:.85rem;font-weight:700;color:white;background:linear-gradient(135deg,#4f7cff,#00c48c);background-size:200% 200%;border:none;border-radius:10px;cursor:pointer;box-shadow:0 4px 14px rgba(79,124,255,.28);transition:all .25s ease;display:flex;align-items:center;gap:.4rem;position:relative;overflow:hidden;animation:btnGrad 5s ease infinite;}
+  .search-btn svg{width:14px;height:14px;}
+  .search-btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(79,124,255,.38);}
+
+  /* TABLE */
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;}
+  thead tr{background:var(--surface2);border-bottom:1.5px solid var(--border);}
+  th{padding:.8rem 1.2rem;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);text-align:left;white-space:nowrap;}
+  th:first-child{padding-left:1.6rem;}th:last-child{padding-right:1.6rem;text-align:right;}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .2s ease;opacity:0;animation:rowReveal .4s ease forwards;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:rgba(79,124,255,.025);}
+  @keyframes rowReveal{from{opacity:0;transform:translateX(-10px);}to{opacity:1;transform:translateX(0);}}
+  tbody tr:nth-child(1){animation-delay:1.0s;}tbody tr:nth-child(2){animation-delay:1.08s;}tbody tr:nth-child(3){animation-delay:1.16s;}tbody tr:nth-child(4){animation-delay:1.24s;}tbody tr:nth-child(5){animation-delay:1.32s;}tbody tr:nth-child(6){animation-delay:1.40s;}tbody tr:nth-child(7){animation-delay:1.48s;}tbody tr:nth-child(8){animation-delay:1.56s;}tbody tr:nth-child(9){animation-delay:1.64s;}tbody tr:nth-child(10){animation-delay:1.72s;}tbody tr:nth-child(n+11){animation-delay:1.8s;}
+  td{padding:.85rem 1.2rem;font-size:.88rem;color:var(--text);vertical-align:middle;}
+  td:first-child{padding-left:1.6rem;}td:last-child{padding-right:1.6rem;}
+  .id-badge{display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:.75rem;font-weight:500;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.15rem .5rem;}
+  .vehicle-num{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:500;color:var(--text);letter-spacing:.04em;display:flex;align-items:center;gap:.5rem;}
+  .vehicle-num-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 2.2s ease-in-out infinite;flex-shrink:0;}
+  .owner-cell{display:flex;align-items:center;gap:.6rem;}
+  .owner-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,rgba(79,124,255,.15),rgba(0,196,140,.15));border:1.5px solid rgba(79,124,255,.2);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--blue);flex-shrink:0;text-transform:uppercase;}
+  .owner-name{font-weight:600;font-size:.88rem;color:var(--text);}
+  .phone-cell{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text-secondary);}
+  .qr-pill{display:inline-flex;align-items:center;gap:.4rem;font-family:'DM Mono',monospace;font-size:.75rem;font-weight:500;color:var(--blue);background:var(--blue-soft);border:1px solid rgba(79,124,255,.18);border-radius:8px;padding:.25rem .65rem;}
+  .qr-pill svg{width:11px;height:11px;}
+  .actions-cell{display:flex;align-items:center;gap:.5rem;justify-content:flex-end;}
+  .btn-view,.btn-delete{display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .85rem;font-family:inherit;font-size:.78rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;text-decoration:none;transition:all .22s ease;position:relative;overflow:hidden;white-space:nowrap;}
+  .btn-view svg,.btn-delete svg{width:13px;height:13px;flex-shrink:0;}
+  .btn-view{background:var(--blue-soft);color:var(--blue);border:1px solid rgba(79,124,255,.2);}
+  .btn-view:hover{background:var(--blue);color:white;box-shadow:0 4px 14px rgba(79,124,255,.35);transform:translateY(-1px);}
+  .btn-delete{background:var(--red-soft);color:var(--red);border:1px solid rgba(255,77,106,.18);}
+  .btn-delete:hover{background:var(--red);color:white;box-shadow:0 4px 14px rgba(255,77,106,.35);transform:translateY(-1px);}
+  .empty-state{padding:3.5rem 1rem;text-align:center;}
+  .empty-icon{width:60px;height:60px;border-radius:16px;background:var(--surface2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
+  .empty-icon svg{width:26px;height:26px;color:var(--text-muted);}
+  .empty-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.3rem;}
+  .empty-sub{font-size:.82rem;color:var(--text-muted);}
+  .table-footer{padding:.9rem 1.6rem;border-top:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;font-size:.76rem;color:var(--text-muted);}
+  .table-footer-info{display:flex;align-items:center;gap:.4rem;}
+  .table-footer-info svg{width:11px;height:11px;color:var(--green);}
+  .powered{font-size:.68rem;opacity:.7;}
+  .powered span{font-weight:600;background:linear-gradient(135deg,#4f7cff,#00c48c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+  @media(max-width:768px){
+    .page{padding:1.2rem;}
+    .navbar{padding:0 1.2rem;}
+    .nav-time{display:none;}
+    .section-header{flex-direction:column;align-items:flex-start;}
+    .search-input{width:180px;}
+    .quick-actions{gap:.4rem;}
+    .qa-btn{font-size:.78rem;padding:.45rem .8rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="particles" id="particles"></div>
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- Delete / Reset Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+      </svg>
+    </div>
+    <div class="modal-title" id="modalTitle">Delete Vehicle?</div>
+    <div class="modal-sub" id="modalSub">This will permanently remove the vehicle and its QR code from the registry. This action cannot be undone.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <a id="modalConfirmLink" href="#" class="modal-confirm">Confirm</a>
+    </div>
+  </div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="/admin/dashboard" class="nav-brand">
+      <div class="nav-brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3m0 4h4v-4m-4 0v-3"/>
+        </svg>
+      </div>
+      <div class="nav-brand-name">QR<span>Vault</span></div>
+    </a>
+    <div class="nav-badge"><span class="nav-badge-dot"></span> Admin</div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-time" id="navClock">--:--:--</div>
+    <a href="/admin/logout" class="logout-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Logout
+    </a>
+  </div>
+</nav>
+
+<!-- Page -->
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <div class="page-eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Control Center
+      </div>
+      <div class="page-title-h">Admin <span class="accent">Dashboard</span></div>
+    </div>
+  </div>
+
+  <!-- Quick Actions Bar -->
+  <div class="quick-actions">
+    <span class="qa-label">Quick Actions</span>
+
+    <a href="/register" class="qa-btn primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Register Vehicle
+    </a>
+
+    <div class="qa-sep"></div>
+
+    <a href= "/admin/bulk_cards/100" class="qa-btn amber-btn" onclick="showToast('Generating cards…','amber')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/></svg>
+      Generate Cards
+    </a>
+    
+
+
+    <div class="qa-sep"></div>
+
+    <a href="/admin/reset_scans" class="qa-btn danger-btn"
+       onclick="event.preventDefault();openResetModal(this.href)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+      Reset Scans
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-top">
+        <div class="stat-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h5l2 3v4h-7V8z"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </div>
+        <div class="stat-trend up">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+          Total
+        </div>
+      </div>
+      <div class="stat-value counter" data-target="{{ total_registered }}">0</div>
+      <div class="stat-label">Total Registered</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="--pct:100%"></div></div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-top">
+        <div class="stat-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="stat-trend up">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+          Active
+        </div>
+      </div>
+      <div class="stat-value counter" data-target="{{ activated_count }}">0</div>
+      <div class="stat-label">Activated Vehicles</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="--pct:65%"></div></div>
+    </div>
+
+    <div class="stat-card amber">
+      <div class="stat-top">
+        <div class="stat-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3m0 4h4v-4m-4 0v-3"/>
+          </svg>
+        </div>
+        <div class="stat-trend neutral">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Pending
+        </div>
+      </div>
+      <div class="stat-value counter" data-target="{{ unused_count }}">0</div>
+      <div class="stat-label">Unused QR Codes</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="--pct:35%"></div></div>
+    </div>
+  </div>
+
+  <!-- Vehicle Table -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h5l2 3v4h-7V8z"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+          Vehicle Registry
+          <span class="row-count">{{ vehicles | length }}</span>
+        </div>
+        <div class="section-sub">All registered vehicles and their QR codes</div>
+      </div>
+
+      <form method="GET" action="/admin/dashboard" class="search-form">
+        <div class="search-wrap">
+          <div class="search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+          <input type="text" name="search" class="search-input" placeholder="Search vehicle or owner…" value="{{ request.args.get('search', '') }}">
+        </div>
+        <button type="submit" class="search-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Search
+        </button>
+      </form>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Vehicle No.</th><th>Owner</th><th>Phone</th><th>QR Code</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in vehicles %}
+          <tr>
+            <td><span class="id-badge">#{{ v[0] }}</span></td>
+            <td>
+              <div class="vehicle-num">
+                <span class="vehicle-num-dot"></span>{{ v[1] }}
+              </div>
+            </td>
+            <td>
+              <div class="owner-cell">
+                <div class="owner-avatar">{{ v[2][0] if v[2] else '?' }}</div>
+                <div class="owner-name">{{ v[2] }}</div>
+              </div>
+            </td>
+            <td><span class="phone-cell">{{ v[3] }}</span></td>
+            <td>
+              <span class="qr-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                  <rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3m0 4h4v-4m-4 0v-3"/>
+                </svg>
+                {{ v[5] }}
+              </span>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <a href="/v/{{ v[5] }}" target="_blank" class="btn-view">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  View
+                </a>
+                <button class="btn-delete" onclick="openModal('/admin/delete_vehicle/{{ v[0] }}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    <path d="M10 11v6M14 11v6"/>
+                  </svg>
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr style="animation:none;opacity:1;">
+            <td colspan="6">
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                    <rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h5l2 3v4h-7V8z"/>
+                    <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                  </svg>
+                </div>
+                <div class="empty-title">No vehicles found</div>
+                <div class="empty-sub">Try a different search term or register a new vehicle</div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <div class="table-footer-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Registry data is live and accurate
+      </div>
+      <div class="powered">Powered by <span>QRVault</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* Clock */
+  function tick(){
+    const n=new Date();
+    document.getElementById('navClock').textContent=n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  }
+  tick(); setInterval(tick,1000);
+
+  /* Particles */
+  const pW=document.getElementById('particles');
+  const pC=['#4f7cff','#00c48c','#f5a623','#ff4d6a','#c4b5fd','#6ee7b7'];
+  for(let i=0;i<20;i++){
+    const p=document.createElement('div');p.className='particle';
+    const s=Math.random()*7+3;
+    p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;background:${pC[Math.floor(Math.random()*pC.length)]};animation-duration:${Math.random()*14+10}s;animation-delay:${Math.random()*-20}s;`;
+    pW.appendChild(p);
+  }
+
+  /* Toast */
+  function showToast(msg,color='green'){
+    const s=document.getElementById('toastStack');
+    const t=document.createElement('div');t.className='toast';
+    t.innerHTML=`<span class="toast-dot ${color}"></span>${msg}`;
+    s.appendChild(t);
+    setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),380);},3200);
+  }
+
+  /* Modal */
+  function openModal(href){
+    document.getElementById('modalTitle').textContent='Delete Vehicle?';
+    document.getElementById('modalSub').textContent='This will permanently remove the vehicle and its QR code. This action cannot be undone.';
+    document.getElementById('modalConfirmLink').href=href;
+    document.getElementById('deleteModal').classList.add('show');
+  }
+  function openResetModal(href){
+    document.getElementById('modalTitle').textContent='Reset All Scan Data?';
+    document.getElementById('modalSub').textContent='All scan history will be permanently erased. This cannot be undone.';
+    document.getElementById('modalConfirmLink').href=href;
+    document.getElementById('deleteModal').classList.add('show');
+  }
+  function closeModal(){document.getElementById('deleteModal').classList.remove('show');}
+  document.getElementById('deleteModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+  /* Animated counters */
+  function animateCounter(el){
+    const target=parseInt(el.dataset.target)||0;
+    const dur=900;const start=performance.now();
+    function step(now){
+      const p=Math.min((now-start)/dur,1);
+      const e=1-Math.pow(1-p,3);
+      el.textContent=Math.floor(e*target);
+      if(p<1)requestAnimationFrame(step);else el.textContent=target;
+    }
+    requestAnimationFrame(step);
+  }
+  setTimeout(()=>{document.querySelectorAll('.counter').forEach(animateCounter);},700);
+
+  /* Ripple */
+  document.querySelectorAll('.btn-view,.btn-delete,.search-btn,.logout-btn,.qa-btn').forEach(btn=>{
+    btn.addEventListener('mousedown',function(e){
+      const r=this.getBoundingClientRect();
+      const rip=document.createElement('span');
+      const sz=Math.max(r.width,r.height)*2;
+      rip.style.cssText=`position:absolute;border-radius:50%;width:${sz}px;height:${sz}px;left:${e.clientX-r.left-sz/2}px;top:${e.clientY-r.top-sz/2}px;background:rgba(255,255,255,.2);transform:scale(0);pointer-events:none;animation:rpl .5s ease-out forwards;`;
+      this.style.position='relative';this.style.overflow='hidden';
+      this.appendChild(rip);setTimeout(()=>rip.remove(),550);
+    });
+  });
+
+  /* Row border glow */
+  document.querySelectorAll('tbody tr').forEach(row=>{
+    row.addEventListener('mouseenter',()=>row.style.boxShadow='inset 3px 0 0 var(--blue)');
+    row.addEventListener('mouseleave',()=>row.style.boxShadow='');
+  });
+
+  /* Inject ripple keyframe */
+  const sty=document.createElement('style');
+  sty.textContent='@keyframes rpl{to{transform:scale(1);opacity:0;}}';
+  document.head.appendChild(sty);
+
+  /* Welcome toast */
+  setTimeout(()=>showToast('Dashboard loaded successfully','green'),1500);
+</script>
+</body>
+</html>

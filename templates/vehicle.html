@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicle Info — {{ vehicle[1] }}</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0eb;
+    --surface: #ffffff;
+    --surface2: #faf8f5;
+    --border: #e8e0d8;
+    --text: #1a1714;
+    --text-secondary: #6b6460;
+    --text-muted: #a89f9a;
+    --green: #00c48c;
+    --blue: #4f7cff;
+    --amber: #f5a623;
+    --red: #ff4d6a;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+    --shadow-lg: 0 16px 48px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.05);
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    position: relative;
+  }
+
+  /* Background gradient layers */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 700px 500px at 10% 10%, rgba(79,124,255,0.07) 0%, transparent 65%),
+      radial-gradient(ellipse 600px 500px at 90% 85%, rgba(0,196,140,0.07) 0%, transparent 65%),
+      radial-gradient(ellipse 400px 300px at 55% 45%, rgba(245,166,35,0.05) 0%, transparent 65%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* Orbs */
+  .orb {
+    position: fixed; border-radius: 50%;
+    filter: blur(72px); pointer-events: none; z-index: 0;
+    animation: orbFloat ease-in-out infinite;
+  }
+  .orb-1 { width: 420px; height: 420px; background: radial-gradient(circle, rgba(79,124,255,0.13), transparent 70%); top: -120px; left: -100px; animation-duration: 13s; }
+  .orb-2 { width: 360px; height: 360px; background: radial-gradient(circle, rgba(0,196,140,0.11), transparent 70%); bottom: -80px; right: -80px; animation-duration: 11s; animation-delay: -4s; }
+  .orb-3 { width: 240px; height: 240px; background: radial-gradient(circle, rgba(255,77,106,0.09), transparent 70%); top: 40%; left: 58%; animation-duration: 9s; animation-delay: -6s; }
+
+  @keyframes orbFloat {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33%  { transform: translate(22px,-22px) scale(1.04); }
+    66%  { transform: translate(-16px,16px) scale(0.97); }
+  }
+
+  /* Floating particles */
+  .particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .particle {
+    position: absolute; border-radius: 50%; opacity: 0;
+    animation: particleRise linear infinite;
+  }
+  @keyframes particleRise {
+    0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+    5%   { opacity: 0.55; transform: translateY(95vh) scale(1); }
+    90%  { opacity: 0.4; }
+    100% { transform: translateY(-120px) scale(0.6); opacity: 0; }
+  }
+
+  /* Wrapper */
+  .wrapper {
+    position: relative; z-index: 10;
+    width: 100%; max-width: 440px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(28px) scale(0.97);
+    animation: cardReveal 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.1s forwards;
+  }
+  @keyframes cardReveal {
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Animated rainbow stripe */
+  .stripe {
+    height: 3px;
+    background: linear-gradient(90deg, #4f7cff 0%, #00c48c 40%, #f5a623 70%, #ff4d6a 100%);
+    background-size: 200% 100%;
+    animation: stripeMove 5s ease infinite;
+  }
+  @keyframes stripeMove {
+    0%, 100% { background-position: 0% 50%; }
+    50%       { background-position: 100% 50%; }
+  }
+
+  /* Hero section */
+  .hero {
+    background: linear-gradient(160deg, #f0f4ff 0%, #e8fdf5 60%, #fdf8f0 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2.2rem 1.6rem;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeIn 0.5s ease 0.5s forwards;
+  }
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  /* Subtle hero pattern */
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(79,124,255,0.06) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+  }
+
+  /* Scan badge */
+  .scan-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.28rem 0.8rem;
+    background: rgba(79,124,255,0.1);
+    border: 1px solid rgba(79,124,255,0.22);
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--blue);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 1rem;
+  }
+  .scan-badge-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--blue);
+    animation: blink 1.8s ease-in-out infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  /* Vehicle number plate */
+  .plate-wrap {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    position: relative; z-index: 1;
+  }
+
+  .vehicle-icon {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, #4f7cff, #00c48c);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 22px rgba(79,124,255,0.28);
+    flex-shrink: 0;
+    position: relative; overflow: hidden;
+  }
+  .vehicle-icon::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: conic-gradient(from 0deg, transparent 55%, rgba(255,255,255,0.22) 65%, transparent 75%);
+    animation: sweepRotate 4s linear infinite;
+  }
+  @keyframes sweepRotate { to { transform: rotate(360deg); } }
+  .vehicle-icon svg { width: 28px; height: 28px; color: white; position: relative; z-index: 1; }
+
+  .plate-text { flex: 1; }
+  .plate-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.06em;
+    line-height: 1.1;
+  }
+  .plate-sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+  }
+
+  /* Status chip */
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.22rem 0.65rem;
+    background: rgba(0,196,140,0.1);
+    border: 1px solid rgba(0,196,140,0.25);
+    border-radius: 99px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.5rem;
+  }
+  .status-chip-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  /* Card body */
+  .card-body {
+    padding: 1.6rem 2.2rem 2rem;
+  }
+
+  /* Owner info */
+  .owner-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: slideInLeft 0.5s ease 0.7s forwards;
+  }
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-14px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .owner-avatar {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(245,166,35,0.15), rgba(245,166,35,0.25));
+    border: 1.5px solid rgba(245,166,35,0.25);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .owner-avatar svg { width: 20px; height: 20px; color: var(--amber); }
+
+  .owner-details { flex: 1; }
+  .owner-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+  }
+  .owner-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* Section title */
+  .section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Call buttons */
+  .call-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    opacity: 0;
+    animation: slideInLeft 0.5s ease 0.85s forwards;
+  }
+
+  .call-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Shimmer sweep */
+  .call-btn::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -70%;
+    width: 45%; height: 200%;
+    background: linear-gradient(105deg, transparent, rgba(255,255,255,0.3), transparent);
+    transform: skewX(-18deg);
+    transition: left 0.55s ease;
+  }
+  .call-btn:hover::after { left: 130%; }
+
+  .call-btn-owner {
+    background: linear-gradient(135deg, #4f7cff 0%, #6b93ff 100%);
+    box-shadow: 0 6px 20px rgba(79,124,255,0.28);
+  }
+  .call-btn-owner:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(79,124,255,0.38); }
+
+  .call-btn-emergency {
+    background: linear-gradient(135deg, #ff4d6a 0%, #ff7b8e 100%);
+    box-shadow: 0 6px 20px rgba(255,77,106,0.25);
+  }
+  .call-btn-emergency:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(255,77,106,0.36); }
+
+  .call-btn:active { transform: translateY(0) scale(0.98); }
+
+  /* Icon in button */
+  .btn-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.18);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    position: relative; z-index: 1;
+    transition: transform 0.3s ease;
+  }
+  .call-btn:hover .btn-icon { transform: scale(1.1) rotate(-5deg); }
+  .btn-icon svg { width: 20px; height: 20px; color: white; }
+
+  .btn-text { position: relative; z-index: 1; text-align: left; }
+  .btn-title { font-size: 0.95rem; font-weight: 700; color: white; line-height: 1.2; }
+  .btn-subtitle { font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 0.1rem; }
+
+  .btn-arrow {
+    margin-left: auto;
+    position: relative; z-index: 1;
+    color: rgba(255,255,255,0.5);
+    transition: transform 0.3s ease, color 0.3s ease;
+  }
+  .call-btn:hover .btn-arrow { transform: translateX(4px); color: rgba(255,255,255,0.9); }
+  .btn-arrow svg { width: 18px; height: 18px; }
+
+  /* Emergency badge */
+  .emergency-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.22rem 0.7rem;
+    background: rgba(255,77,106,0.08);
+    border: 1px solid rgba(255,77,106,0.18);
+    border-radius: 99px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    width: fit-content;
+    margin-bottom: 0.7rem;
+    opacity: 0;
+    animation: fadeIn 0.4s ease 1s forwards;
+  }
+  .emergency-badge svg { width: 9px; height: 9px; }
+
+  /* Footer */
+  .card-footer {
+    padding: 1rem 2.2rem 1.4rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeIn 0.5s ease 1.1s forwards;
+  }
+  .footer-info {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.73rem;
+    color: var(--text-muted);
+  }
+  .footer-info svg { width: 12px; height: 12px; }
+  .footer-powered {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    opacity: 0.7;
+  }
+  .footer-powered span {
+    font-weight: 600;
+    background: linear-gradient(135deg, #4f7cff, #00c48c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  @media (max-width: 480px) {
+    .hero, .card-body { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .plate-number { font-size: 1.35rem; }
+    .card-footer { padding-left: 1.5rem; padding-right: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="particles" id="particles"></div>
+
+<div class="wrapper">
+  <div class="card">
+    <div class="stripe"></div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="scan-badge">
+        <span class="scan-badge-dot"></span>
+        QR Scanned
+      </div>
+      <div class="plate-wrap">
+        <div class="vehicle-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="3" width="15" height="13" rx="2"/>
+            <path d="M16 8h5l2 3v4h-7V8z"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/>
+            <circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </div>
+        <div class="plate-text">
+          <div class="plate-number">{{ vehicle[1] }}</div>
+          <div class="plate-sub">Registered Vehicle</div>
+          <div class="status-chip">
+            <span class="status-chip-dot"></span>
+            Verified & Active
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="card-body">
+
+      <!-- Owner info -->
+      <div class="owner-row">
+        <div class="owner-avatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div class="owner-details">
+          <div class="owner-label">Vehicle Owner</div>
+          <div class="owner-name">{{ vehicle[2] }}</div>
+        </div>
+      </div>
+
+      <!-- Call owner -->
+      <div class="call-stack">
+        <div>
+          <div class="section-title">Direct Contact</div>
+          <a href="tel:{{ vehicle[3] }}" class="call-btn call-btn-owner">
+            <div class="btn-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.58 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.77a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/>
+              </svg>
+            </div>
+            <div class="btn-text">
+              <div class="btn-title">Call Owner</div>
+              <div class="btn-subtitle">{{ vehicle[3] }}</div>
+            </div>
+            <div class="btn-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        </div>
+
+        <div>
+          <div class="emergency-badge">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+            Emergency Only
+          </div>
+          <a href="tel:{{ vehicle[4] }}" class="call-btn call-btn-emergency">
+            <div class="btn-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.58 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.77a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/>
+              </svg>
+            </div>
+            <div class="btn-text">
+              <div class="btn-title">Emergency Contact</div>
+              <div class="btn-subtitle">{{ vehicle[4] }}</div>
+            </div>
+            <div class="btn-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer">
+      <div class="footer-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Verified via QR scan
+      </div>
+      <div class="footer-powered">Powered by <span>QRVault</span></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Floating particles
+  const pWrap = document.getElementById('particles');
+  const colors = ['#4f7cff','#00c48c','#f5a623','#ff4d6a','#c4b5fd'];
+  for(let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const s = Math.random() * 9 + 4;
+    p.style.cssText = `
+      width:${s}px; height:${s}px;
+      left:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${Math.random()*14+9}s;
+      animation-delay:${Math.random()*-18}s;
+    `;
+    pWrap.appendChild(p);
+  }
+
+  // Ripple on call buttons
+  document.querySelectorAll('.call-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      const rect = this.getBoundingClientRect();
+      const rip = document.createElement('span');
+      const size = Math.max(rect.width, rect.height) * 2.2;
+      rip.style.cssText = `
+        position:absolute; border-radius:50%;
+        width:${size}px; height:${size}px;
+        left:${e.clientX - rect.left - size/2}px;
+        top:${e.clientY - rect.top - size/2}px;
+        background:rgba(255,255,255,0.22);
+        transform:scale(0); pointer-events:none;
+        animation: rpl 0.55s ease-out forwards;
+      `;
+      this.appendChild(rip);
+      setTimeout(() => rip.remove(), 600);
+    });
+  });
+
+  const s = document.createElement('style');
+  s.textContent = `@keyframes rpl { to { transform:scale(1); opacity:0; } }`;
+  document.head.appendChild(s);
+</script>
+</body>
+</html>
