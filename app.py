@@ -4,8 +4,7 @@ from flask import Response, make_response
 from flask import Flask, render_template, request, redirect, session, send_file
 import sqlite3
 import os
-from PIL import Image, ImageDraw
-
+from PIL import Image, ImageDraw, ImageFont
 
 app = Flask(__name__)
 app.secret_key = "vahaan_super_secret_key"
@@ -253,139 +252,7 @@ def vehicle(code):
         return "⚠️ QR Not Activated Yet"
 
 
-# ------------------------
-# DOWNLOAD VEHICLE CARD
-# ------------------------
 
-# from flask import send_file
-# from PIL import Image, ImageDraw, ImageFont
-# from io import BytesIO
-# import os
-
-# @app.route('/download_card/<code>')
-# def download_card(code):
-
-#     # -------- QR IMAGE PATH --------
-#     qr_path = f"static/qr/{code}.png"
-
-#     if not os.path.exists(qr_path):
-#         return "QR image not found"
-
-#     qr_image = Image.open(qr_path).resize((220, 220))
-
-#     # -------- CARD SIZE --------
-#     width, height = 720, 420
-#     card = Image.new("RGB", (width, height), "#E5E7EB")
-#     draw = ImageDraw.Draw(card)
-
-#     # -------- LOAD FONTS (Windows Safe) --------
-#     try:
-#         title_font = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 34)
-#         big_font   = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 30)  # BIG TEXT
-#         text_font  = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 24)
-#         small_font = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 18)
-#     except:
-#         title_font = ImageFont.load_default()
-#         big_font   = ImageFont.load_default()
-#         text_font  = ImageFont.load_default()
-#         small_font = ImageFont.load_default()
-
-#     # -------- HEADER --------
-#     draw.rectangle([0, 0, width, 90], fill="#0F172A")
-
-#     draw.text(
-#         (30, 28),
-#         "VAHAANSETU FLEET SECURITY",
-#         fill="white",
-#         font=title_font
-#     )
-
-#     # -------- DIVIDER --------
-#     draw.line([(380, 90), (380, 360)], fill="#D1D5DB", width=2)
-
-#     # -------- LEFT PANEL TEXT --------
-
-#     top_y = 150
-#     bottom_y = 260
-
-#     # Top text
-#     draw.text(
-#         (60, top_y),
-#         f"QR Code ID: {code}",
-#         fill="#374151",
-#         font=text_font
-#     )
-
-#     # Bottom text
-#     draw.text(
-#         (60, bottom_y),
-#         "Authorized Corporate Use",
-#         fill="#374151",
-#         font=text_font
-#     )
-
-#     # ⭐ TWO-LINE BIG OWNER INFORMATION
-
-#     title1 = "OWNER"
-#     title2 = "INFORMATION"
-
-#     # Measure sizes
-#     bbox1 = draw.textbbox((0, 0), title1, font=big_font)
-#     bbox2 = draw.textbbox((0, 0), title2, font=big_font)
-
-#     h1 = bbox1[3] - bbox1[1]
-#     h2 = bbox2[3] - bbox2[1]
-
-#     total_height = h1 + h2 + 5
-
-#     # Center vertically between top and bottom text
-#     middle_y = (top_y + bottom_y) // 2 - total_height // 2
-
-#     # Center horizontally in LEFT PANEL
-#     left_panel_center = 190
-
-#     # Draw OWNER
-#     draw.text(
-#         (left_panel_center - (bbox1[2] - bbox1[0]) // 2, middle_y),
-#         title1,
-#         fill="#111827",
-#         font=big_font
-#     )
-
-#     # Draw INFORMATION
-#     draw.text(
-#         (left_panel_center - (bbox2[2] - bbox2[0]) // 2,
-#          middle_y + h1 + 5),
-#         title2,
-#         fill="#111827",
-#         font=big_font
-#     )
-
-#     # -------- QR IMAGE --------
-#     card.paste(qr_image, (430, 120))
-
-#     # -------- FOOTER --------
-#     draw.rectangle([0, 360, width, height], fill="#CBD5E1")
-
-#     draw.text(
-#         (30, 385),
-#         "Scan to securely contact vehicle owner",
-#         fill="#475569",
-#         font=small_font
-#     )
-
-#     # -------- SEND WITHOUT SAVING --------
-#     img_io = BytesIO()
-#     card.save(img_io, 'PNG')
-#     img_io.seek(0)
-
-#     return send_file(
-#         img_io,
-#         mimetype='image/png',
-#         as_attachment=True,
-#         download_name=f"{code}_card.png"
-#     )
-# --------------------------------------------------------------------------------------------
 from flask import send_file
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO, StringIO
@@ -437,29 +304,6 @@ def download_card(code):
     # -------- DIVIDER --------
     divider_x = 540
     draw.line([(divider_x, 120), (divider_x, 560)], fill="#D1D5DB", width=4)
-
-
-# ------------------------------------------------------------------------------------
-import sqlite3
-
-@app.route("/admin/export")
-def export_csv():
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, vehicle_number, owner_name, phone, qr_code FROM vehicles")
-    rows = cursor.fetchall()
-    conn.close()
-
-    si = StringIO()
-    writer = csv.writer(si)
-    writer.writerow(["ID", "Vehicle Number", "Owner Name", "Phone", "QR Code"])
-    writer.writerows(rows)
-
-    return Response(
-        si.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-Disposition": "attachment;filename=vehicles.csv"}
-    )
 
 
 
@@ -545,6 +389,33 @@ def export_csv():
         as_attachment=True,
         download_name=f"{code}_pvc_card.png"
     )
+
+
+
+
+# Export CSV functionality (Optional, can be enabled if needed)
+import sqlite3
+
+@app.route("/admin/export")
+def export_csv():
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, vehicle_number, owner_name, phone, qr_code FROM vehicles")
+    rows = cursor.fetchall()
+    conn.close()
+
+    si = StringIO()
+    writer = csv.writer(si)
+    writer.writerow(["ID", "Vehicle Number", "Owner Name", "Phone", "QR Code"])
+    writer.writerows(rows)
+
+    return Response(
+        si.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=vehicles.csv"}
+    )
+
+
 # ------------------------
 # ADMIN LOGIN
 # ------------------------
@@ -633,21 +504,27 @@ def delete_vehicle(id):
 # ------------------------
 # RESET SCANS
 # ------------------------
-
-@app.route('/admin/reset_scans')
+@app.route('/admin/reset_scans', methods=['POST'])
 def reset_scans():
 
     if session.get('admin') != True:
         return redirect('/admin')
 
     conn = sqlite3.connect('database.db')
+    conn.execute("PRAGMA foreign_keys = ON")
     c = conn.cursor()
 
+    # 🔥 PUT DELETE QUERIES HERE
     c.execute("DELETE FROM scan_logs")
+    c.execute("DELETE FROM vehicles")   # if you also want to reset vehicles
+
     conn.commit()
     conn.close()
 
     return redirect('/admin/dashboard')
+
+print("Reset route called")
+
 
 
 # ------------------------
