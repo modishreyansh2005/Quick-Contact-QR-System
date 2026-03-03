@@ -667,4 +667,4 @@ def admin_logout():
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
 
-app = Flask(__name__)
+# app = Flask(__name__)
