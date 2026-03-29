@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Activated — Success</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0eb;
+    --surface: #ffffff;
+    --surface2: #faf8f5;
+    --border: #e8e0d8;
+    --text: #1a1714;
+    --text-secondary: #6b6460;
+    --text-muted: #a89f9a;
+    --green: #00c48c;
+    --blue: #4f7cff;
+    --amber: #f5a623;
+    --red: #ff4d6a;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-lg: 0 16px 48px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.05);
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    position: relative;
+  }
+
+  /* Background layers */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 800px 600px at 15% 15%, rgba(0,196,140,0.08) 0%, transparent 65%),
+      radial-gradient(ellipse 600px 500px at 85% 80%, rgba(79,124,255,0.07) 0%, transparent 65%),
+      radial-gradient(ellipse 400px 300px at 50% 50%, rgba(245,166,35,0.05) 0%, transparent 65%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* Orbs */
+  .orb {
+    position: fixed; border-radius: 50%;
+    filter: blur(70px); pointer-events: none; z-index: 0;
+    animation: orbFloat ease-in-out infinite;
+  }
+  .orb-1 { width: 440px; height: 440px; background: radial-gradient(circle, rgba(0,196,140,0.15), transparent 70%); top: -120px; left: -120px; animation-duration: 14s; }
+  .orb-2 { width: 360px; height: 360px; background: radial-gradient(circle, rgba(79,124,255,0.1), transparent 70%); bottom: -80px; right: -80px; animation-duration: 11s; animation-delay: -4s; }
+  .orb-3 { width: 260px; height: 260px; background: radial-gradient(circle, rgba(245,166,35,0.1), transparent 70%); top: 45%; left: 55%; animation-duration: 9s; animation-delay: -7s; }
+
+  @keyframes orbFloat {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(22px,-22px) scale(1.04); }
+    66% { transform: translate(-16px,16px) scale(0.97); }
+  }
+
+  /* Confetti particles */
+  .confetti-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+    opacity: 0;
+  }
+  @keyframes confettiFall {
+    0%   { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+    80%  { opacity: 0.8; }
+    100% { opacity: 0; transform: translateY(105vh) rotate(720deg) scale(0.5); }
+  }
+
+  /* Wrapper */
+  .wrapper {
+    position: relative; z-index: 10;
+    width: 100%; max-width: 460px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(32px) scale(0.97);
+    animation: cardReveal 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+  }
+  @keyframes cardReveal {
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Top stripe */
+  .stripe {
+    height: 3px;
+    background: linear-gradient(90deg, #00c48c 0%, #4f7cff 50%, #f5a623 100%);
+    background-size: 200% 100%;
+    animation: stripeMove 5s ease infinite;
+  }
+  @keyframes stripeMove {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .card-body { padding: 2.4rem 2.2rem 2rem; }
+
+  /* Success badge */
+  .success-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.8rem;
+    opacity: 0;
+    animation: fadeSlideDown 0.6s ease 0.5s forwards;
+  }
+  @keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .check-ring {
+    position: relative;
+    width: 80px; height: 80px;
+    margin-bottom: 1rem;
+  }
+  .check-ring svg.ring-svg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    animation: ringPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s both;
+    transform: scale(0);
+  }
+  @keyframes ringPop {
+    to { transform: scale(1); }
+  }
+  .ring-circle {
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 2.5;
+    stroke-dasharray: 220;
+    stroke-dashoffset: 220;
+    stroke-linecap: round;
+    animation: ringDraw 0.8s cubic-bezier(0.4,0,0.2,1) 0.8s forwards;
+  }
+  @keyframes ringDraw {
+    to { stroke-dashoffset: 0; }
+  }
+  .check-icon-inner {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .check-icon-inner svg {
+    width: 36px; height: 36px; color: var(--green);
+    opacity: 0;
+    animation: checkAppear 0.4s ease 1.4s forwards;
+    stroke-dasharray: 50;
+    stroke-dashoffset: 50;
+  }
+  @keyframes checkAppear {
+    to { opacity: 1; stroke-dashoffset: 0; }
+  }
+
+  /* Pulse rings behind check */
+  .pulse-ring {
+    position: absolute; inset: -8px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0,196,140,0.3);
+    animation: pulseExpand 2.5s ease-out 1.6s infinite;
+  }
+  .pulse-ring:nth-child(2) { inset: -16px; animation-delay: 2.1s; border-color: rgba(0,196,140,0.18); }
+  @keyframes pulseExpand {
+    0%   { transform: scale(0.85); opacity: 0.8; }
+    100% { transform: scale(1.3); opacity: 0; }
+  }
+
+  .success-title {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.03em;
+    text-align: center;
+  }
+  .success-title .green { color: var(--green); }
+
+  .success-sub {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+    text-align: center;
+  }
+
+  /* Info panel */
+  .info-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem 1.3rem;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeSlideUp 0.5s ease 0.9s forwards;
+  }
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .info-row {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .info-row:first-child { padding-top: 0; }
+
+  .info-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .info-label {
+    font-size: 0.74rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    width: 90px;
+    flex-shrink: 0;
+  }
+  .info-value {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.01em;
+  }
+
+  /* QR preview */
+  .qr-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeSlideUp 0.5s ease 1.05s forwards;
+  }
+
+  .qr-frame {
+    position: relative;
+    padding: 1rem;
+    background: white;
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    box-shadow: var(--shadow-md);
+    display: inline-block;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .qr-frame:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  }
+  .qr-frame img { display: block; border-radius: 8px; }
+
+  /* Corner accents */
+  .qr-corner {
+    position: absolute;
+    width: 16px; height: 16px;
+    border-color: var(--green);
+    border-style: solid;
+  }
+  .qr-corner.tl { top: 6px; left: 6px; border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }
+  .qr-corner.tr { top: 6px; right: 6px; border-width: 2px 2px 0 0; border-radius: 0 3px 0 0; }
+  .qr-corner.bl { bottom: 6px; left: 6px; border-width: 0 0 2px 2px; border-radius: 0 0 0 3px; }
+  .qr-corner.br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }
+
+  /* Scan line */
+  .scan-line {
+    position: absolute;
+    left: 10px; right: 10px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    border-radius: 99px;
+    top: 10px;
+    animation: scanMove 2.5s ease-in-out 1.8s infinite;
+  }
+  @keyframes scanMove {
+    0%, 100% { top: 10px; opacity: 0.8; }
+    50% { top: calc(100% - 12px); opacity: 1; }
+  }
+
+  .qr-label {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-top: 0.65rem;
+    letter-spacing: 0.03em;
+  }
+
+  /* Buttons */
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    opacity: 0;
+    animation: fadeSlideUp 0.5s ease 1.2s forwards;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -70%;
+    width: 45%; height: 200%;
+    background: linear-gradient(105deg, transparent, rgba(255,255,255,0.28), transparent);
+    transform: skewX(-18deg);
+    transition: left 0.55s ease;
+  }
+  .btn:hover::after { left: 130%; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #4f7cff, #00c48c);
+    color: white;
+    box-shadow: 0 6px 20px rgba(79,124,255,0.28);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(79,124,255,0.38); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-secondary:hover { transform: translateY(-2px); background: white; box-shadow: var(--shadow-md); border-color: #d0c8c0; }
+
+  .btn svg { width: 17px; height: 17px; flex-shrink: 0; }
+  .btn-label { position: relative; z-index: 1; display: flex; align-items: center; gap: 0.5rem; }
+
+  /* Hint */
+  .hint {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    opacity: 0;
+    animation: fadeSlideUp 0.5s ease 1.35s forwards;
+  }
+  .hint svg { width: 13px; height: 13px; color: var(--amber); flex-shrink: 0; }
+
+  /* Status pill */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.28rem 0.75rem;
+    background: rgba(0,196,140,0.1);
+    border: 1px solid rgba(0,196,140,0.25);
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--green);
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: blink 1.8s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
+  }
+
+  @media (max-width: 480px) {
+    .card-body { padding: 1.8rem 1.4rem 1.6rem; }
+    .success-title { font-size: 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="confetti-wrap" id="confetti"></div>
+
+<div class="wrapper">
+  <div class="card">
+    <div class="stripe"></div>
+    <div class="card-body">
+
+      <!-- Success Header -->
+      <div class="success-badge">
+        <div class="check-ring">
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+          <svg class="ring-svg" viewBox="0 0 80 80">
+            <circle class="ring-circle" cx="40" cy="40" r="34" transform="rotate(-90 40 40)"/>
+          </svg>
+          <div class="check-icon-inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+        </div>
+        <div class="status-pill"><span class="status-dot"></span> Active</div>
+        <div class="success-title">QR Code <span class="green">Activated!</span></div>
+        <div class="success-sub">Your vehicle is now registered & identifiable</div>
+      </div>
+
+      <!-- Vehicle Info -->
+      <div class="info-panel">
+        <div class="info-row">
+          <span class="info-dot" style="background:#4f7cff"></span>
+          <span class="info-label">Vehicle</span>
+          <span class="info-value">{{ vehicle_number }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-dot" style="background:#f5a623"></span>
+          <span class="info-label">Owner</span>
+          <span class="info-value">{{ owner_name }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-dot" style="background:#00c48c"></span>
+          <span class="info-label">QR Code</span>
+          <span class="info-value">{{ qr_code }}</span>
+        </div>
+      </div>
+
+      <!-- QR Preview -->
+      <div class="qr-section">
+        <div class="qr-frame">
+          <div class="qr-corner tl"></div>
+          <div class="qr-corner tr"></div>
+          <div class="qr-corner bl"></div>
+          <div class="qr-corner br"></div>
+          <div class="scan-line"></div>
+          <img src="/static/qr/{{ qr_code }}.png" width="180" height="180" alt="QR Code">
+        </div>
+        <span class="qr-label">Scan to verify vehicle details</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="actions">
+        <a href="/download_card/{{ qr_code }}" class="btn btn-primary">
+          <span class="btn-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download Vehicle Card
+          </span>
+        </a>
+        <a href="/v/{{ qr_code }}" class="btn btn-secondary">
+          <span class="btn-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            Test My QR Code
+          </span>
+        </a>
+      </div>
+
+      <!-- Hint -->
+      <div class="hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Print the vehicle card and place it on your dashboard or windshield
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Confetti burst
+  const wrap = document.getElementById('confetti');
+  const colors = ['#4f7cff','#00c48c','#f5a623','#ff4d6a','#c4b5fd','#fda4af','#6ee7b7'];
+  const shapes = ['circle', 'square', 'rect'];
+
+  function burst() {
+    for (let i = 0; i < 80; i++) {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const shape = shapes[Math.floor(Math.random() * shapes.length)];
+      const size = Math.random() * 8 + 5;
+      const left = Math.random() * 100;
+      const delay = Math.random() * 1.2;
+      const dur = Math.random() * 2.5 + 2;
+      const drift = (Math.random() - 0.5) * 200;
+      el.style.cssText = `
+        left: ${left}%;
+        width: ${shape === 'rect' ? size * 2 : size}px;
+        height: ${size}px;
+        background: ${color};
+        border-radius: ${shape === 'circle' ? '50%' : shape === 'rect' ? '2px' : '2px'};
+        animation: confettiFall ${dur}s cubic-bezier(0.2,0.8,0.4,1) ${delay}s forwards;
+        transform: translateX(${drift}px);
+        opacity: 0;
+      `;
+      wrap.appendChild(el);
+      setTimeout(() => el.remove(), (delay + dur + 0.2) * 1000);
+    }
+  }
+
+  setTimeout(burst, 1400);
+  setTimeout(burst, 2600);
+
+  // Button ripple
+  document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      const rect = this.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      const size = Math.max(rect.width, rect.height) * 2;
+      ripple.style.cssText = `
+        position:absolute; border-radius:50%;
+        width:${size}px; height:${size}px;
+        left:${e.clientX - rect.left - size/2}px;
+        top:${e.clientY - rect.top - size/2}px;
+        background:rgba(255,255,255,0.3);
+        transform:scale(0); pointer-events:none;
+        animation: ripple 0.55s ease-out forwards;
+      `;
+      this.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    });
+  });
+
+  // Global ripple keyframes
+  const style = document.createElement('style');
+  style.textContent = `@keyframes ripple { to { transform: scale(1); opacity: 0; } }`;
+  document.head.appendChild(style);
+</script>
+</body>
+</html>
