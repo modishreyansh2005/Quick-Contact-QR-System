@@ -2,7 +2,7 @@ import sqlite3
 import qrcode
 import os
 
-BASE_URL = "http://127.0.0.1:5000/v/"   # change later to domain
+BASE_URL = "https://quick-contact-qr-system-1-5gvv.onrender.com/v/"   # change later to domain
 
 if not os.path.exists("static/qr"):
     os.makedirs("static/qr")
